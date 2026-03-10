@@ -301,7 +301,7 @@ function handleTerminalChatEvent(
   // Reload history when tools were used so the persisted tool results
   // replace the now-cleared streaming state.
   if (hadToolEvents && state === "final") {
-    void loadChatHistory(host as unknown as OpenClawApp);
+    void loadChatHistory(host as unknown as OpenClawApp, { background: true });
     return true;
   }
   return false;
@@ -317,7 +317,7 @@ function handleChatGatewayEvent(host: GatewayHost, payload: ChatEventPayload | u
   const state = handleChatEvent(host as unknown as OpenClawApp, payload);
   const historyReloaded = handleTerminalChatEvent(host, payload, state);
   if (state === "final" && !historyReloaded && shouldReloadHistoryForFinalEvent(payload)) {
-    void loadChatHistory(host as unknown as OpenClawApp);
+    void loadChatHistory(host as unknown as OpenClawApp, { background: true });
   }
 }
 
@@ -347,7 +347,7 @@ function handleGatewayEventUnsafe(host: GatewayHost, evt: GatewayEventFrame) {
       typeof toolData?.phase === "string" &&
       toolData.phase === "result"
     ) {
-      void loadChatHistory(host as unknown as OpenClawApp);
+      void loadChatHistory(host as unknown as OpenClawApp, { background: true });
     }
     return;
   }

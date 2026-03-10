@@ -198,7 +198,7 @@ export function renderChatControls(state: AppViewState) {
               next,
               true,
             );
-            void loadChatHistory(state as unknown as ChatState);
+            void loadChatHistory(state as unknown as ChatState, { limit: 50, background: true });
           }}
         >
           ${repeat(

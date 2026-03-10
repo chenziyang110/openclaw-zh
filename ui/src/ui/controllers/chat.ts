@@ -63,10 +63,12 @@ function maybeResetToolStream(state: ChatState) {
   }
 }
 
-export async function loadChatHistory(state: ChatState) {
+export async function loadChatHistory(state: ChatState, options?: { limit?: number; background?: boolean }) {
   if (!state.client || !state.connected) {
     return;
   }
+  const limit = options?.limit ?? 50; // Default to 50 for faster initial load
+  const background = options?.background ?? false;
   state.chatLoading = true;
   state.lastError = null;
   try {
@@ -74,17 +76,28 @@ export async function loadChatHistory(state: ChatState) {
       "chat.history",
       {
         sessionKey: state.sessionKey,
-        limit: 200,
+        limit,
       },
     );
     const messages = Array.isArray(res.messages) ? res.messages : [];
-    state.chatMessages = messages.filter((message) => !isAssistantSilentReply(message));
-    state.chatThinkingLevel = res.thinkingLevel ?? null;
-    // Clear all streaming state — history includes tool results and text
-    // inline, so keeping streaming artifacts would cause duplicates.
-    maybeResetToolStream(state);
-    state.chatStream = null;
-    state.chatStreamStartedAt = null;
+    
+    // Process messages in background to avoid blocking UI
+    if (background) {
+      // For background load, don't filter immediately - do it async
+      setTimeout(() => {
+        state.chatMessages = messages.filter((message) => !isAssistantSilentReply(message));
+        state.chatThinkingLevel = res.thinkingLevel ?? null;
+        maybeResetToolStream(state);
+        state.chatStream = null;
+        state.chatStreamStartedAt = null;
+      }, 0);
+    } else {
+      state.chatMessages = messages.filter((message) => !isAssistantSilentReply(message));
+      state.chatThinkingLevel = res.thinkingLevel ?? null;
+      maybeResetToolStream(state);
+      state.chatStream = null;
+      state.chatStreamStartedAt = null;
+    }
   } catch (err) {
     state.lastError = String(err);
   } finally {

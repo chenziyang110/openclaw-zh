@@ -203,8 +203,9 @@ export async function handleSendChat(
 }
 
 export async function refreshChat(host: ChatHost, opts?: { scheduleScroll?: boolean }) {
+  // Initial load: use smaller limit for faster response, background mode to avoid UI freeze
   await Promise.all([
-    loadChatHistory(host as unknown as OpenClawApp),
+    loadChatHistory(host as unknown as OpenClawApp, { limit: 50, background: true }),
     loadSessions(host as unknown as OpenClawApp, {
       activeMinutes: CHAT_SESSIONS_ACTIVE_MINUTES,
     }),

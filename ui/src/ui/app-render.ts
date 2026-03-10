@@ -971,7 +971,7 @@ export function renderApp(state: AppViewState) {
                     lastActiveSessionKey: next,
                   });
                   void state.loadAssistantIdentity();
-                  void loadChatHistory(state);
+                  void loadChatHistory(state, { limit: 50, background: true });
                   void refreshChatAvatar(state);
                 },
                 thinkingLevel: state.chatThinkingLevel,
@@ -996,7 +996,10 @@ export function renderApp(state: AppViewState) {
                 focusMode: chatFocus,
                 onRefresh: () => {
                   state.resetToolStream();
-                  return Promise.all([loadChatHistory(state), refreshChatAvatar(state)]);
+                  return Promise.all([
+                    loadChatHistory(state, { limit: 50, background: true }),
+                    refreshChatAvatar(state),
+                  ]);
                 },
                 onToggleFocusMode: () => {
                   if (state.onboarding) {
